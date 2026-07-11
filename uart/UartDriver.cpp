@@ -55,6 +55,10 @@ void UartDriver::init(std::uint32_t baud_rate) {
         false
     );
 
+    dma_channel_hw_addr(dma_channel_)->al1_ctrl = channel_config_get_ctrl_value(&cfg);
+    dma_channel_hw_addr(dma_channel_)->al1_read_addr = reinterpret_cast<uintptr_t>(&uart_get_hw(uart0)->dr);
+    dma_channel_hw_addr(dma_channel_)->al2_write_addr_trig = reinterpret_cast<uintptr_t>(dma_buf_.data());
+
     dma_channel_start(dma_channel_);
 
     initialized_ = true;
