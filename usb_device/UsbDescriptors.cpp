@@ -196,6 +196,20 @@ void usb_apply_polling_rate() {
     }
 }
 
+static std::uint8_t g_hid_protocol = 1;
+
+bool usb_is_nkro_supported() {
+    return g_hid_protocol != 0;
+}
+
+void usb_set_protocol(std::uint8_t protocol) {
+    g_hid_protocol = protocol;
+}
+
+std::uint8_t usb_get_protocol() {
+    return g_hid_protocol;
+}
+
 } // namespace usb_device
 
 static tusb_desc_device_t desc_device = {
@@ -222,7 +236,35 @@ uint8_t const* tud_descriptor_device_cb(void) {
 }
 
 static uint8_t const desc_hid_report_keyboard[] = {
-    TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(1) )
+    TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(1) ),
+    // NKRO Keyboard (Report ID 4) - 16-byte bitmap for 128 keys
+    0x85, 0x04,        // Report ID (4)
+    0x05, 0x01,        // Usage Page (Generic Desktop)
+    0x09, 0x06,        // Usage (Keyboard)
+    0xa1, 0x01,        // Collection (Application)
+    // Modifiers (8 bits)
+    0x05, 0x07,        //   Usage Page (Keyboard/Keypad)
+    0x19, 0xe0,        //   Usage Minimum (Left Control)
+    0x29, 0xe7,        //   Usage Maximum (Right GUI)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x08,        //   Report Count (8)
+    0x81, 0x02,        //   Input (Data, Variable, Absolute)
+    // Reserved (1 byte)
+    0x95, 0x01,        //   Report Count (1)
+    0x75, 0x08,        //   Report Size (8)
+    0x81, 0x01,        //   Input (Constant)
+    // Key bitmap (128 bits = 16 bytes, covering Usage 0x00-0x7F)
+    0x05, 0x07,        //   Usage Page (Keyboard/Keypad)
+    0x19, 0x00,        //   Usage Minimum (0)
+    0x29, 0x7F,        //   Usage Maximum (127)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x80,        //   Report Count (128)
+    0x81, 0x02,        //   Input (Data, Variable, Absolute)
+    0xc0               // End Collection
 };
 
 static uint8_t const desc_hid_report_mouse[] = {
