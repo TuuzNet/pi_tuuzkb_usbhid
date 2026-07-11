@@ -15,12 +15,9 @@ constexpr std::uint8_t kHidItfNumKeyboard = 0;
 constexpr std::uint8_t kHidItfNumMouse    = 1;
 constexpr std::uint8_t kHidItfNumMedia    = 2;
 
-constexpr std::uint8_t kReportIdKeyboard     = 1;
-constexpr std::uint8_t kReportIdMouse        = 2;
-constexpr std::uint8_t kReportIdMedia        = 3;
-constexpr std::uint8_t kReportIdNkroKeyboard = 4;
-
-constexpr std::size_t kNkroBitMapBytes = 16;
+constexpr std::uint8_t kReportIdKeyboard = 1;
+constexpr std::uint8_t kReportIdMouse    = 2;
+constexpr std::uint8_t kReportIdMedia    = 3;
 
 constexpr std::size_t kMaxUsbStringLen = 64;
 
@@ -46,10 +43,6 @@ const char* usb_get_serial();
 void usb_set_polling_rate(std::uint8_t rate_ms);
 std::uint8_t usb_get_polling_rate();
 void usb_apply_polling_rate();
-
-bool usb_is_nkro_supported();
-void usb_set_protocol(std::uint8_t protocol);
-std::uint8_t usb_get_protocol();
 
 } // namespace usb_device
 

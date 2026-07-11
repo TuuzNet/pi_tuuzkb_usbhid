@@ -1,5 +1,4 @@
 #include "UsbHidDevice.h"
-#include "UsbDescriptors.h"
 #include "tusb.h"
 #include "bsp/board.h"
 
@@ -25,7 +24,6 @@ UsbHidDevice::UsbHidDevice()
     current_mouse_.wheel = 0;
     current_media_.byte1 = 0;
     current_media_.byte2 = 0;
-    key_bitmap_.fill(0);
 }
 
 void UsbHidDevice::init() {
@@ -51,44 +49,6 @@ bool UsbHidDevice::isMounted() const {
     return tud_mounted();
 }
 
-bool UsbHidDevice::isNkroActive() const {
-    return usb_get_protocol() != 0;
-}
-
-void UsbHidDevice::setKeyInBitmap(std::uint8_t usage, bool pressed) {
-    if (usage >= 128) return;
-    std::uint8_t byte_idx = usage / 8;
-    std::uint8_t bit_idx = usage % 8;
-    if (pressed) {
-        key_bitmap_[byte_idx] |= static_cast<std::uint8_t>(1 << bit_idx);
-    } else {
-        key_bitmap_[byte_idx] &= static_cast<std::uint8_t>(~(1 << bit_idx));
-    }
-}
-
-void UsbHidDevice::clearAllKeys() {
-    key_bitmap_.fill(0);
-}
-
-void UsbHidDevice::sendNkroReport() {
-    std::array<std::uint8_t, 19> nkro_report{};
-    nkro_report[0] = kReportIdNkroKeyboard;
-    nkro_report[1] = current_kb_.modifiers;
-    nkro_report[2] = 0;
-    for (std::size_t i = 0; i < kNkroBitMapBytes; ++i) {
-        nkro_report[3 + i] = key_bitmap_[i];
-    }
-    tud_hid_n_report(0, kReportIdNkroKeyboard, nkro_report.data(), nkro_report.size());
-}
-
-void UsbHidDevice::sendBootReport() {
-    uint8_t keycode[6];
-    for (int i = 0; i < 6; ++i) {
-        keycode[i] = current_kb_.keys[i];
-    }
-    tud_hid_n_keyboard_report(0, kReportIdKeyboard, current_kb_.modifiers, keycode);
-}
-
 void UsbHidDevice::sendKeyboardReport(const protocol::KeyboardReport& report) {
     if (!initialized_ || !tud_mounted()) return;
 
@@ -96,18 +56,12 @@ void UsbHidDevice::sendKeyboardReport(const protocol::KeyboardReport& report) {
 
     current_kb_ = report;
 
-    clearAllKeys();
-    for (const auto& k : report.keys) {
-        if (k != 0) {
-            setKeyInBitmap(k, true);
-        }
+    uint8_t keycode[6];
+    for (int i = 0; i < 6; ++i) {
+        keycode[i] = report.keys[i];
     }
 
-    if (isNkroActive()) {
-        sendNkroReport();
-    } else {
-        sendBootReport();
-    }
+    tud_hid_n_keyboard_report(0, 1, report.modifiers, keycode);
 }
 
 void UsbHidDevice::sendMouseReport(const protocol::MouseReport& report) {
@@ -175,8 +129,6 @@ void UsbHidDevice::handleSingleKey(const protocol::KbSingleKeyEvent& evt) {
             current_kb_.modifiers &= static_cast<std::uint8_t>(~mod_bit);
         }
     } else {
-        setKeyInBitmap(evt.usage, evt.pressed);
-
         if (evt.pressed) {
             bool already = false;
             for (auto& k : current_kb_.keys) {
@@ -211,11 +163,11 @@ void UsbHidDevice::handleSingleKey(const protocol::KbSingleKeyEvent& evt) {
 }
 
 void UsbHidDevice::flushKeyboardReport() {
-    if (isNkroActive()) {
-        sendNkroReport();
-    } else {
-        sendBootReport();
+    uint8_t keycode[6];
+    for (int i = 0; i < 6; ++i) {
+        keycode[i] = current_kb_.keys[i];
     }
+    tud_hid_n_keyboard_report(0, 1, current_kb_.modifiers, keycode);
     kb_dirty_ = false;
 }
 
@@ -246,14 +198,11 @@ void tud_mount_cb(void) {
 void tud_umount_cb(void) {
 }
 
-void tud_hid_set_protocol_cb(uint8_t instance, uint8_t protocol) {
-    (void) instance;
-    usb_device::usb_set_protocol(protocol);
+void tud_suspend_cb(bool remote_wakeup_en) {
+    (void) remote_wakeup_en;
 }
 
-bool tud_hid_get_protocol_cb(uint8_t instance) {
-    (void) instance;
-    return usb_device::usb_get_protocol() != 0;
+void tud_resume_cb(void) {
 }
 
-}
+} // extern "C"

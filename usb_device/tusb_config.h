@@ -14,7 +14,7 @@
 #define CFG_TUD_DFU_RUNTIME            0
 #define CFG_TUD_DFU_MODE               0
 
-#define CFG_TUD_HID_EP_BUFSIZE          32
+#define CFG_TUD_HID_EP_BUFSIZE          16
 
 #define CFG_TUD_ENDPOINT0_SIZE           64
 

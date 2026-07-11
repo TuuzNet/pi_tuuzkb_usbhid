@@ -37,27 +37,17 @@ public:
 
     bool isMounted() const;
 
-    bool isNkroActive() const;
-
     static void setLedCallback(LedCallback cb);
 
 private:
     void flushKeyboardReport();
     void flushMouseReport();
 
-    void sendNkroReport();
-    void sendBootReport();
-
-    void setKeyInBitmap(std::uint8_t usage, bool pressed);
-    void clearAllKeys();
-
     bool initialized_;
 
     protocol::KeyboardReport current_kb_;
     protocol::MouseReport    current_mouse_;
     protocol::MediaReport    current_media_;
-
-    std::array<std::uint8_t, 16> key_bitmap_;
 
     bool kb_dirty_;
     bool mouse_dirty_;
