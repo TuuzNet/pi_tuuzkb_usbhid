@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <array>
 
 namespace uart {
 
@@ -31,10 +32,18 @@ public:
     void write(const std::uint8_t* data, std::size_t len);
 
 private:
+    static constexpr std::size_t kDmaBufSize = 256;
+    static constexpr std::size_t kDmaBufMask = kDmaBufSize - 1;
+
     bool initialized_;
+    int dma_channel_;
+    std::array<std::uint8_t, kDmaBufSize> dma_buf_;
+    std::size_t last_read_pos_;
 
     static constexpr std::uint8_t kTXPin = 0;
     static constexpr std::uint8_t kRXPin = 1;
+
+    std::size_t getWritePos() const;
 };
 
 } // namespace uart

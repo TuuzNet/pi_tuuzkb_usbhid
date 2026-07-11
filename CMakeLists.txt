@@ -66,6 +66,7 @@ target_link_libraries(pi_tuuzkb_recv
     pico_stdlib
     hardware_uart
     hardware_gpio
+    hardware_dma
     hardware_flash
     hardware_sync
     tinyusb_device
