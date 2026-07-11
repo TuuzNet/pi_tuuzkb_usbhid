@@ -44,7 +44,6 @@ void UartDriver::init(std::uint32_t baud_rate) {
     channel_config_set_read_increment(&cfg, false);
     channel_config_set_write_increment(&cfg, true);
     channel_config_set_dreq(&cfg, DREQ_UART0_RX);
-    channel_config_set_ring(&cfg, true, 8);
     channel_config_set_chain_to(&cfg, dma_channel_);
 
     dma_channel_configure(
