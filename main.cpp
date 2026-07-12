@@ -31,7 +31,7 @@ int main() {
     absolute_time_t btn_press_time{};
     bool btn_was_pressed = false;
 
-    uart::UartDriver uart;
+    static uart::UartDriver uart;
     uart.init(115200);
 
     // ===== 自动波特率协商 =====

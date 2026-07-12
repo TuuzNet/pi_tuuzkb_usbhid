@@ -5,12 +5,14 @@
 #include "hardware/gpio.h"
 #include "hardware/dma.h"
 #include "hardware/structs/uart.h"
-
 namespace uart {
 
 UartDriver::UartDriver() : initialized_(false) {}
 
 UartDriver::~UartDriver() {
+    if (dma_enabled_) {
+        dma_rx_channel_.release();
+    }
     if (initialized_) {
         uart_deinit(uart0);
     }
@@ -24,6 +26,9 @@ void UartDriver::initDmaRx() {
 
     dma_rx_buffer_.fill(0);
     dma_rx_read_pos_ = 0;
+
+    static_assert(alignof(UartDriver) >= kDmaRxBufferSize,
+                  "UartDriver must be aligned to 1024 for DMA ring-buffer wrap");
 
     auto config = dma_rx_channel_.get_default_config();
     channel_config_set_transfer_data_size(&config, DMA_SIZE_8);

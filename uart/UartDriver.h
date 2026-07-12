@@ -45,7 +45,7 @@ private:
     static constexpr std::size_t kDmaRxBufferMask = kDmaRxBufferSize - 1;
     static constexpr std::uint32_t kDmaTransferCount = 0xFFFFFFFF;
 
-    std::array<std::uint8_t, kDmaRxBufferSize> dma_rx_buffer_;
+    alignas(kDmaRxBufferSize) std::array<std::uint8_t, kDmaRxBufferSize> dma_rx_buffer_;
     std::size_t dma_rx_read_pos_ = 0;
 
     void initDmaRx();
