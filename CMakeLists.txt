@@ -36,6 +36,7 @@ pico_sdk_init()
 # ====== Pi TuuZKB Recv - USB HID Device Firmware ======
 #
 # 分层架构：
+#   /drivers            - 驱动层 (DMA)
 #   /uart               - UART 驱动层
 #   /protocol           - 协议解析层
 #   /usb_device         - USB HID 设备层 (TinyUSB Device)
@@ -43,6 +44,7 @@ pico_sdk_init()
 
 add_executable(pi_tuuzkb_recv
     main.cpp
+    drivers/dma_channel.cpp
     uart/UartDriver.cpp
     protocol/ProtocolParser.cpp
     usb_device/UsbDescriptors.cpp
@@ -57,6 +59,7 @@ pico_enable_stdio_usb(pi_tuuzkb_recv 0)
 
 target_include_directories(pi_tuuzkb_recv PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/drivers
     ${CMAKE_CURRENT_LIST_DIR}/uart
     ${CMAKE_CURRENT_LIST_DIR}/protocol
     ${CMAKE_CURRENT_LIST_DIR}/usb_device
@@ -68,6 +71,7 @@ target_link_libraries(pi_tuuzkb_recv
     hardware_gpio
     hardware_flash
     hardware_sync
+    hardware_dma
     tinyusb_device
     tinyusb_board
 )

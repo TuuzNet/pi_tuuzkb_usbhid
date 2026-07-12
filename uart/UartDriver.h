@@ -7,6 +7,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <array>
+#include "../drivers/dma_channel.h"
 
 namespace uart {
 
@@ -35,6 +37,20 @@ private:
 
     static constexpr std::uint8_t kTXPin = 0;
     static constexpr std::uint8_t kRXPin = 1;
+
+    bool dma_enabled_ = false;
+    drivers::DmaChannel dma_rx_channel_;
+
+    static constexpr std::size_t kDmaRxBufferSize = 1024;
+    static constexpr std::size_t kDmaRxBufferMask = kDmaRxBufferSize - 1;
+    static constexpr std::uint32_t kDmaTransferCount = 0xFFFFFFFF;
+
+    std::array<std::uint8_t, kDmaRxBufferSize> dma_rx_buffer_;
+    std::size_t dma_rx_read_pos_ = 0;
+
+    void initDmaRx();
+    std::size_t dmaWritePos() const;
+    std::size_t dmaAvailable() const;
 };
 
 } // namespace uart
